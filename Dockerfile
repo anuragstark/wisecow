@@ -5,6 +5,9 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PORT=4499
 
+# Use bash explicitly for all RUN commands
+SHELL ["/bin/bash", "-c"]
+
 # Install required packages
 RUN apt-get update && apt-get install -y \
     netcat-openbsd \
