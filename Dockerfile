@@ -4,6 +4,7 @@ FROM ubuntu:22.04
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PORT=4499
+ENV PATH="/usr/games:$PATH"
 
 # Use bash explicitly for all RUN commands
 SHELL ["/bin/bash", "-c"]

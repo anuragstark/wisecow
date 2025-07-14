@@ -25,17 +25,22 @@ EOF
 }
 
 prerequisites() {
-	if ! command -v cowsay >/dev/null 2>&1; then
+	echo "Install prerequisites."
+	
+	# Check for cowsay with full path
+	if ! command -v cowsay >/dev/null 2>&1 && ! command -v /usr/games/cowsay >/dev/null 2>&1; then
 		echo "cowsay is not installed"
 		exit 1
 	fi
 
-	if ! command -v fortune >/dev/null 2>&1; then
+	# Check for fortune with full path
+	if ! command -v fortune >/dev/null 2>&1 && ! command -v /usr/games/fortune >/dev/null 2>&1; then
 		echo "fortune is not installed"
 		exit 1
 	fi
+	
+	echo "Prerequisites check passed."
 }
-
 
 main() {
 	prerequisites
