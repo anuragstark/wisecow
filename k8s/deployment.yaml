@@ -7,6 +7,11 @@ metadata:
     app: wisecow
 spec:
   replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: wisecow
@@ -14,38 +19,61 @@ spec:
     metadata:
       labels:
         app: wisecow
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4499"
     spec:
       imagePullSecrets:
-        - name: ghcr-secret # this line is used to pull images from a private registry
+        - name: ghcr-secret
       containers:
         - name: wisecow
-          image: your-registry/wisecow:latest
-          imagePullPolicy: Always
+          image: ghcr.io/anuragstark/wisecow:latest # Using 'latest' tag
+          imagePullPolicy: Always # Always pull new versions
+          command: ["/bin/bash", "-c", "cd /app && exec ./wisecow.sh"] # exec replaces shell process
           ports:
             - containerPort: 4499
+              name: http
           env:
             - name: PORT
               value: "4499"
           resources:
             requests:
-              memory: "64Mi"
+              memory: "128Mi" # Increased for stability
               cpu: "250m"
             limits:
-              memory: "128Mi"
+              memory: "256Mi"
               cpu: "500m"
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /
               port: 4499
+              scheme: HTTP
             initialDelaySeconds: 30
-            periodSeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3 # Added
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /
               port: 4499
-            initialDelaySeconds: 5
-            periodSeconds: 5
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3 # Added
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop: ["ALL"]
       restartPolicy: Always
+      securityContext:
+        fsGroup: 2000
+
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: wisecow
+  labels:
+    name: wisecow

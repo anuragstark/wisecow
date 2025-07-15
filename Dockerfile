@@ -29,8 +29,8 @@ RUN chmod +x wisecow.sh
 EXPOSE 4499
 
 # Create non-root user
-RUN useradd -m -s /bin/bash appuser && chown -R appuser:appuser /app
-USER appuser
+# RUN useradd -m -s /bin/bash appuser && chown -R appuser:appuser /app
+# USER appuser
 
 # Run the application
 CMD ["./wisecow.sh"]
