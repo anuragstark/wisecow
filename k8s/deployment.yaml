@@ -10,10 +10,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
-  minReadySeconds: 40 # Added to allow pods to stabilize
-  progressDeadlineSeconds: 300 # Added (10 minute timeout)
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: wisecow
@@ -25,7 +23,6 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "4499"
     spec:
-      terminationGracePeriodSeconds: 60 # Added for graceful shutdown
       imagePullSecrets:
         - name: ghcr-secret
       containers:
@@ -41,36 +38,47 @@ spec:
               value: "4499"
           resources:
             requests:
-              memory: "256Mi" # Increased from 128Mi
+              memory: "128Mi"
               cpu: "250m"
             limits:
-              memory: "512Mi" # Increased from 256Mi
-              cpu: "1000m" # Increased from 500m
-          startupProbe: # Added new startup probe
+              memory: "256Mi"
+              cpu: "500m"
+          # Startup probe - gives container time to start
+          startupProbe:
             httpGet:
               path: /
               port: 4499
-            failureThreshold: 30
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 4499
-            initialDelaySeconds: 45 # Increased from 30
-            periodSeconds: 15 # Increased from 10
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
             timeoutSeconds: 5
-            failureThreshold: 3 # Added
+            failureThreshold: 12 # 60 seconds total (12 * 5)
+            successThreshold: 1
+          # Readiness probe - more lenient during startup
           readinessProbe:
             httpGet:
               path: /
               port: 4499
-            initialDelaySeconds: 20 # Increased from 10
-            periodSeconds: 10 # Increased from 5
-            timeoutSeconds: 5 # Increased from 3
-            failureThreshold: 3 # Added
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+          # Liveness probe - only after startup is complete
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 4499
+              scheme: HTTP
+            initialDelaySeconds: 60 # Wait longer for liveness
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
           securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
+            runAsNonRoot: false # Changed to false temporarily for debugging
+            runAsUser: 0 # Run as root temporarily
             capabilities:
               drop: ["ALL"]
       restartPolicy: Always

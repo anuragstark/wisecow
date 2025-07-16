@@ -20,17 +20,17 @@ ENV PATH="/usr/games:${PATH}"
 WORKDIR /app
 
 # Copy the wisecow script
-COPY wisecow.sh .
+COPY wisecow.sh /app/wisecow.sh
 
-# Make script executable
-RUN chmod +x wisecow.sh
+# Make script executable and verify it exists
+RUN chmod +x /app/wisecow.sh && \
+    ls -la /app/wisecow.sh
 
 # Expose port
 EXPOSE 4499
 
-# Create non-root user
-# RUN useradd -m -s /bin/bash appuser && chown -R appuser:appuser /app
-# USER appuser
+# Test the script works (comment out after testing)
+# RUN timeout 5s /app/wisecow.sh || echo "Script test completed"
 
 # Run the application
 CMD ["./wisecow.sh"]
