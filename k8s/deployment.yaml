@@ -10,8 +10,10 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+      maxSurge: 25%
+      maxUnavailable: 25%
+  minReadySeconds: 40 # Added to allow pods to stabilize
+  progressDeadlineSeconds: 300 # Added (10 minute timeout)
   selector:
     matchLabels:
       app: wisecow
@@ -23,13 +25,14 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "4499"
     spec:
+      terminationGracePeriodSeconds: 60 # Added for graceful shutdown
       imagePullSecrets:
         - name: ghcr-secret
       containers:
         - name: wisecow
-          image: ghcr.io/anuragstark/wisecow:latest # Using 'latest' tag
-          imagePullPolicy: Always # Always pull new versions
-          command: ["/bin/bash", "-c", "cd /app && exec ./wisecow.sh"] # exec replaces shell process
+          image: ghcr.io/anuragstark/wisecow:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c", "cd /app && exec ./wisecow.sh"]
           ports:
             - containerPort: 4499
               name: http
@@ -38,27 +41,33 @@ spec:
               value: "4499"
           resources:
             requests:
-              memory: "128Mi" # Increased for stability
+              memory: "256Mi" # Increased from 128Mi
               cpu: "250m"
             limits:
-              memory: "256Mi"
-              cpu: "500m"
+              memory: "512Mi" # Increased from 256Mi
+              cpu: "1000m" # Increased from 500m
+          startupProbe: # Added new startup probe
+            httpGet:
+              path: /
+              port: 4499
+            failureThreshold: 30
+            periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /
               port: 4499
-              scheme: HTTP
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            initialDelaySeconds: 45 # Increased from 30
+            periodSeconds: 15 # Increased from 10
             timeoutSeconds: 5
+            failureThreshold: 3 # Added
           readinessProbe:
             httpGet:
               path: /
               port: 4499
-              scheme: HTTP
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            timeoutSeconds: 3
+            initialDelaySeconds: 20 # Increased from 10
+            periodSeconds: 10 # Increased from 5
+            timeoutSeconds: 5 # Increased from 3
+            failureThreshold: 3 # Added
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
