@@ -12,15 +12,27 @@ get_api() {
 }
 
 handleRequest() {
-    # 1) Process the request
+    # Read the HTTP request
 	get_api
+	
+	# Generate fortune
 	mod=`fortune`
+	
+	# Generate cowsay output
+	cow_output=`cowsay "$mod"`
+	
+	# Calculate content length
+	content="<html><body><pre>$cow_output</pre></body></html>"
+	content_length=${#content}
 
+	# Write proper HTTP response
 cat <<EOF > $RSPFILE
-HTTP/1.1 200
+HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Length: $content_length
+Connection: close
 
-
-<pre>`cowsay $mod`</pre>
+$content
 EOF
 }
 
