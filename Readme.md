@@ -347,7 +347,39 @@ kubectl port-forward pod/<pod-name> -n wisecow 4499:4499
 ## Debugging & Troubleshooting
 
 ### Common Issues and Solutions
+####  🔴 Get LoadBalancer from Ingress
 
+**Symptoms**: Pods in `DNS config` or `Page not Found`
+
+**Debug Steps**:
+```bash
+# Get ingress details
+kubectl get ingress -n wisecow
+
+# Get just the LoadBalancer hostname
+kubectl get ingress -n wisecow -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}'
+
+# More detailed ingress info
+kubectl describe ingress -n wisecow
+
+#Method 3:  Get LoadBalancer from Service
+# Get all services
+kubectl get svc -n wisecow
+
+# Get LoadBalancer service specifically
+kubectl get svc -n wisecow -o wide
+
+# Get external IP/hostname
+kubectl get svc -n wisecow -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}'
+
+#Method 3: Comprehensive Check 
+# Check all LoadBalancer services across namespaces
+kubectl get svc --all-namespaces -o wide | grep LoadBalancer
+
+# Get detailed information
+kubectl get svc,ingress --all-namespaces
+
+```
 #### 1. 🔴 Container Not Starting
 
 **Symptoms**: Pods in `CrashLoopBackOff` or `ImagePullBackOff`
