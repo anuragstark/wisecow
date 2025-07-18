@@ -362,7 +362,7 @@ kubectl get ingress -n wisecow -o jsonpath='{.items[0].status.loadBalancer.ingre
 # More detailed ingress info
 kubectl describe ingress -n wisecow
 
-#Method 3:  Get LoadBalancer from Service
+#Method 2:  Get LoadBalancer from Service
 # Get all services
 kubectl get svc -n wisecow
 
