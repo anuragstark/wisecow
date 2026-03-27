@@ -11,10 +11,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - wisecow.anuragstark.in
+        - www.checkmypro.online
       secretName: wisecow-tls
   rules:
-    - host: wisecow.anuragstark.in
+    - host: www.checkmypro.online
       http:
         paths:
           - path: /

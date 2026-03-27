@@ -60,7 +60,7 @@ kubeconfig: ## Update kubeconfig
 
 setup-cluster: ## Setup cluster components with Ansible
 	@echo -e "$(YELLOW)Setting up cluster components...$(NC)"
-	ansible-playbook ansible/setup-cluster.yaml
+	ansible-playbook ansible/setup-cluster.yaml --ask-become-pass
 	@echo -e "$(GREEN)Cluster setup completed$(NC)"
 
 deploy-app: ## Deploy application to Kubernetes
